@@ -272,5 +272,6 @@ main()
 #Zmniejszanie obrazu wyjściowego ma bazie braku kolorów
 #Dodać obraz który kodowany  jest z pomocą określonego seed-a (jego kolory) [szyfr kodujący i rozkodowujący do obrazu]
 #Dodać funkcję image scramble
+#Dodać kodowanie na background jako pusty obraz, rozmiarowo identyczny jak wiadomość
 
 
