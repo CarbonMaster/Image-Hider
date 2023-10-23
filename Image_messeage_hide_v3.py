@@ -28,8 +28,63 @@ def on_button_click():
 #Główna pętla programu
 def encode():
     #Inicjalizuje obrazy
-    image1 = Image.open("image1.png")
-    image2 = Image.open("image4.png")
+    print("Encoding procedure.\nRemember, that smaller image will be encoded!")
+
+    print("Input first image name and extention (ex. image1.png)")
+    #img1_name = input()
+    print("Input second image name and extention (ex. image2.png)")
+    #img2_name = input()
+
+
+
+    #jbdglavjdsvjcavksdbvl
+    img1_name = "image1.png"
+    img2_name = "image2.png"
+    #jbdglavjdsvjcavksdbvl
+
+
+    t_image1 = Image.open(img1_name)
+    t_image2 = Image.open(img2_name)
+    t_width1, t_height1 = t_image1.size
+    t_width2, t_height2 = t_image2.size
+    
+    
+    if t_width1 * t_height1 >= t_width2 * t_height2:
+        #Obraz 2 jest wiadomoscia
+        if t_width1>=t_width2 and t_height1>=t_height2:
+            image2 = Image.open(img1_name)
+            image1 = Image.open(img2_name)
+            image3 = Image.open(img1_name)
+        else:
+            print("Images are not compatible to conversion due to size limits (uno)")
+    elif t_width1 * t_height1 < t_width2 * t_height2:
+        #Obraz 1 jest wiadomoscia
+        if t_width2>=t_width1 and t_height2>=t_height1:
+            image1 = Image.open(img1_name)
+            image2 = Image.open(img2_name)
+            image3 = Image.open(img2_name)
+        else:
+            print("Images are not suitable to conversion due to size limits (dos)")
+            
+
+    
+
+    print("Do you want to show output image? (y/n)")
+    show = False
+    while True:
+        anwser = input()
+        if anwser == "y" or anwser == "Y":
+            show_img = True
+            break
+        if anwser == "n" or anwser == "N":
+            show_img = False
+            break
+        else:
+            print("Incorrect anwser. Try again. Insert y for Yes or n for No.")
+
+    print("Encoding...")
+
+    
 
     image1 = image1.convert("RGBA")
     image2 = image2.convert("RGBA")
@@ -67,37 +122,32 @@ def encode():
 
 
     #Jezeli obraz 1 jest wiekszy lub taki sam, wtedy
-    if width1 * height1 >= width2 * height2:
-        #Obraz 2 jest wiadomoscia
-        if width1>=width2 & height1>=height2:
-            print("LOL")
-        else:
-            print("Images are not compatible to conversion")
-    elif width1 * height1 < width2 * height2:
-        #Obraz 1 jest wiadomoscia
-        modified_pixels = [round(63 * pixel / 255) for pixel in pixels1]
-        modified_image_temp = Image.new("RGBA", image1.size)
-        modified_image_temp.putdata(modified_pixels)
 
-        red_channel = modified_image_temp.split()[0]
-        modified_image_temp.putalpha(red_channel)
-
-        new_image = Image.new("RGBA", modified_image_temp.size, (0, 0, 0, 0))
-        new_image.putalpha(modified_image_temp.split()[3])
-
-        background = image2.convert("RGBA")
-        top_image = new_image.convert("RGBA")
     
-        bg_width, bg_height = background.size
+    
+    modified_pixels = [round(63 * pixel / 255) for pixel in pixels1]
+    modified_image_temp = Image.new("RGBA", image1.size)
+    modified_image_temp.putdata(modified_pixels)
 
-        result = Image.new("RGBA", (bg_width, bg_height))
-        result.paste(background, (0, 0))
+    red_channel = modified_image_temp.split()[0]
+    modified_image_temp.putalpha(red_channel)
+
+    new_image = Image.new("RGBA", modified_image_temp.size, (0, 0, 0, 0))
+    new_image.putalpha(modified_image_temp.split()[3])
+
+    background = image2.convert("RGBA")
+    
+    top_image = new_image.convert("RGBA")
+    
+    bg_width, bg_height = background.size
+
+    result = Image.new("RGBA", (bg_width, bg_height))
+    result.paste(background, (0, 0))
     
     paste_x = (bg_width - top_image.width) // 2
     paste_y = (bg_height - top_image.height) // 2
-
-    image2 = Image.open("image4.png")
-    background = image2.convert("RGBA")
+    
+    background = image3.convert("RGBA")
     
     for y in range(top_image.height):
         for x in range(top_image.width):
@@ -120,8 +170,13 @@ def encode():
 
             result.putpixel((x,y), (r_bg, g_bg, b_bg, a_res))
 
-    result.show()
-    result.save("encoded.png")
+    if show_img == True:
+        result.show()
+
+        
+    print("Call your output file (without extention), or press CTRL + C to abort.")
+
+    result.save(input()+".png")
     
     return
 
@@ -197,7 +252,8 @@ def main():
 
         
     except:
-        Print("Program failed")
+
+        print("Program failed or aborted")
     return
 
 
