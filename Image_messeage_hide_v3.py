@@ -39,7 +39,7 @@ def encode():
 
     #jbdglavjdsvjcavksdbvl
     img1_name = "image1.png"
-    img2_name = "image2.png"
+    img2_name = "image4.png"
     #jbdglavjdsvjcavksdbvl
 
 
@@ -125,7 +125,7 @@ def encode():
 
     
     
-    modified_pixels = [round(63 * pixel / 255) for pixel in pixels1]
+    modified_pixels = [round(7 * pixel / 255) for pixel in pixels1]
     modified_image_temp = Image.new("RGBA", image1.size)
     modified_image_temp.putdata(modified_pixels)
 
@@ -148,6 +148,16 @@ def encode():
     paste_y = (bg_height - top_image.height) // 2
     
     background = image3.convert("RGBA")
+
+    for y in range(background.height):
+        for x in range(background.width):
+            r_bg, g_bg, b_bg, a_bg = background.getpixel((x,y))
+            if r_bg==0 and g_bg==0 and b_bg ==0:
+                r_bg=255
+                g_bg=255
+                b_bg=255
+                a_bg=255
+            background.putpixel((x,y),(r_bg, g_bg, b_bg, a_bg))
     
     for y in range(top_image.height):
         for x in range(top_image.width):
@@ -165,6 +175,10 @@ def encode():
     for y in range(background.height):
         for x in range(background.width):
             r_bg, g_bg, b_bg, a_bg = background.getpixel((x,y))
+            if r_bg==0 and g_bg==0 and b_bg ==0:
+                r_bg=255
+                g_bg=255
+                b_bg=255
 
             r_res, g_res, b_res, a_res = result.getpixel((x, y))
 
@@ -188,7 +202,7 @@ def encode():
 
 #Tutaj dokonuje odzyskania obrazu z tego gowna
 def decode():
-    image_converted = Image.open("kutas.png")
+    image_converted = Image.open("encoded.png")
 
     width_o, height_o = image_converted.size
 
