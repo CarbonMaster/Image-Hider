@@ -188,7 +188,7 @@ def encode():
 
 #Tutaj dokonuje odzyskania obrazu z tego gowna
 def decode():
-    image_converted = Image.open("encoded.png")
+    image_converted = Image.open("kutas.png")
 
     width_o, height_o = image_converted.size
 
