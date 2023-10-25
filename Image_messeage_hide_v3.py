@@ -106,6 +106,14 @@ def encode():
             a = 255  # Ustaw kanał alfa na maksymalną wartość (255)
             pixels2[x, y] = (r, g, b, a)
 
+    for x in range(width_1):
+        for y in range(height_1):
+            r, g, b, a = pixels1[x, y]
+            r = round(r * (a / 255))
+            g = round(g * (a / 255))
+            b = round(b * (a / 255))
+            pixels1[x, y] = (r, g, b, a)
+
     #image1.putalpha(255)
     #image2.putalpha(255)
     
@@ -125,7 +133,7 @@ def encode():
 
     
     
-    modified_pixels = [round(7 * pixel / 255) for pixel in pixels1]
+    modified_pixels = [round(100 * pixel / 255) for pixel in pixels1]
     modified_image_temp = Image.new("RGBA", image1.size)
     modified_image_temp.putdata(modified_pixels)
 
@@ -190,7 +198,8 @@ def encode():
         
     print("Call your output file (without extention), or press CTRL + C to abort.")
 
-    result.save(input()+".png")
+    #result.save(input()+".png")
+    result.save("encode.png")
     
     return
 
@@ -211,7 +220,7 @@ def decode():
     pixels = list(image_converted.getdata())
 
     min_alpha = 255 
-    max_alpha = 0
+    max_alpha = 255
 
     for pixel in pixels:
         temp = pixel[3]
@@ -219,25 +228,21 @@ def decode():
         if temp < min_alpha:
             min_alpha = temp
 
-        if temp > max_alpha:
-            max_alpha = temp
-
     temp = max_alpha - min_alpha
 
     for x in range(width_o):
         for y in range(height_o):
             alpha_value = pixels[y * width_o + x][3]  # Odczytaj wartość alfa (A)
 
-            if alpha_value < 255:
-                alpha_value = 255 - alpha_value
+            #if alpha_value < 255:
+            #    alpha_value = 255 - alpha_value
     
-            alpha_value = round(((alpha_value)/temp)*255)
+            #alpha_value = round(((alpha_value)/temp)*255)
 
-            if alpha_value < min_alpha:
-                min_alpha = temp
+            #if alpha_value < min_alpha:
+            #    min_alpha = temp
 
-            if alpha_value > max_alpha:
-                max_alpha = temp
+            alpha_value = int((alpha_value - min_alpha) / (max_alpha - min_alpha) * 255)
 
             new_pixel = (alpha_value, alpha_value, alpha_value, 255)
 
@@ -256,19 +261,20 @@ def decode():
 
 def main():
     #root.mainloop()
-    try:
-        print("Input desired operation number: ")
-        Input = input()
-        if (Input == "1"):
-            encode()
-        elif (Input == "2"):
-            decode()
-
+    #try:
+    #    print("Input desired operation number: ")
+    #    Input = input()
+    #    if (Input == "1"):
+    #        encode()
+     #   elif (Input == "2"):
+    #        decode()
+    encode()
+    decode()
         
-    except:
+    #except:
 
-        print("Program failed or aborted")
-    return
+    #    print("Program failed or aborted")
+    #return
 
 
 
