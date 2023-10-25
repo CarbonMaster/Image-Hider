@@ -1,5 +1,8 @@
 #NOTES:
-#Działa dla image1! ale nw czemu dla image2 nie.
+#Oh fuck yeah. It's all coming together.
+
+#To do:
+#Szyfrowanie wg. obecnego kodu
 
 
 from PIL import Image, ImageDraw
@@ -67,66 +70,7 @@ def decrypt():
             pixel_data.append({"ID": liczby[start_number], "R": red, "G": green, "B": blue, "A": alpha})
             start_number = start_number + 1
 
-#AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-
-    
-    #print(height_dec)
-    
-    
-
-
-    #Sprawdzanie czy tabela powyzej ma duplikaty
-    #unique_ids = set()
-    #for data in pixel_data:
-    #    ID_HUJ = data["ID"]
-    #    if ID_HUJ in unique_ids:
-    #        print(f"Znaleziono duplikat dla ID: {ID_HUJ}")
-    #    else:
-    #        unique_ids.add(ID_HUJ)
-
-    
-    
-
-
-    #for tutaj in range(0,len(pixel_data)):
-    #    pixel = pixel_data[tutaj]
-    #    print("ID:", pixel["ID"])
-
-    
-
     sorted_pixel_data = sorted(pixel_data, key=lambda x: x["ID"])
-
-    #print(sorted_pixel_data[0])
-    
-    #moan = 0
-    #for moan in range(0,len(sorted_pixel_data)):
-    #    print(sorted_pixel_data[moan])
-
-
-    #decrypted_img_data = np.zeros((height_dec, width_dec, 5), dtype=int)
-    #uno = 0
-    #for x in range(width_dec):
-    #    for y in range(height_dec):
-    #        element = sorted_pixel_data[uno]
-    #        decrypted_img_data[height_dec-1, width_dec-1, 0] = liczby[uno]
-    #        decrypted_img_data[height_dec-1, width_dec-1, 1] = element["R"]
-    #        decrypted_img_data[height_dec-1, width_dec-1, 2] = element["G"]
-    #        decrypted_img_data[height_dec-1, width_dec-1, 3] = element["B"]
-    #        decrypted_img_data[height_dec-1, width_dec-1, 4] = element["A"]
-            #print(x, "   ", liczby[uno], "    ", uno)
-    #        uno = uno + 1    
-
-
-    #for pixel in sorted_pixel_data:
-    #    x = pixel["ID"] % width_dec - 1
-   #     y = pixel["ID"] // width_dec - 1
-   #     rgba = (pixel["R"], pixel["G"], pixel["B"], pixel["A"])
-   #     decrypted_img.putpixel((x, y), rgba)
-        #pixel = pixel_data[tutaj]
-        #print("ID:", pixel["ID"])
-
-
-   #Correct!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     uno = 0
     for x in range(width_dec):
@@ -138,21 +82,7 @@ def decrypt():
             
     
     decrypted_img.show()
-    #decrypted_img.save("obraz_decoded.png")
-    
-
-#BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
-
-
-
-
-
-
-
-
-
-
-
+    decrypted_img.save("obraz_decoded.png")
 
 
 
@@ -188,25 +118,6 @@ def image_encrypt():
             image_data[i, j, 0] = id_counter  # Unikatowy numer ID
             wolne.append(id_counter)
             id_counter = id_counter + 1
-    
-    #sus = []
-    #sus.append(output_data[i,j,0])
-    #for g in range(0,height):
-    #        for h in range(0,width):
-    #            sus.append(int(image_data[g,h,0]))
-    #            #print(image_data[g,h,0])
-    #duplikaty = False
-    #kutas = 0
-    #for kutas in range(0,len(sus)):
-    #    if sus.count(kutas) > 1:
-    #        duplikaty = True
-    #        print(sus[kutas])
-    #        break
-    #print("IIIIIIIIIIIIIIIIIIIIIIIIIIII")
-    #if duplikaty:
-    #    print("Znaleziono duplikaty.")
-    #else:
-    #    print("XXXXXXXXXXXXXXXXXXXXXXXX")
 
 
     available_coordinates = [(x, y) for x in range(width) for y in range(height)]
@@ -214,53 +125,106 @@ def image_encrypt():
     while wolne:
         rand_index = random.randrange(0,len(wolne))
         ID_choose = wolne[rand_index]
-        #print(ID_choose)
         wolne.pop(rand_index)
-        x, y = calculate_coordinates(ID_choose, width, height)
-        #print(image_data[x,y,0])
-        #print(x, " ", y)
+        y, x = calculate_coordinates(ID_choose, width, height)
         pixel_value = image.getpixel((x, y))
 
         random_index = random.randint(0, len(available_coordinates) - 1)
         random_cell = available_coordinates.pop(random_index)
         x_out, y_out = random_cell
-        #available_coordinates.remove(random_cell)
-        
-        #x_out, y_out = available_coordinates.pop(rand_index)
         obraz.putpixel((x_out, y_out), pixel_value)
         output_data[x_out,y_out,0]=image_data[x, y, 0]
-
-    for i in range(0,width):
-            for j in range(0,height):
-                pixel_value = image.getpixel((i, j))
-                obraz2.putpixel((i, j), pixel_value)
             
     obraz.show()
-    #obraz2.show()
     obraz.save("obraz_en.png")
 
-    #for moan in range(0,len(output_data)):
-    #        print(output_data[moan])
-
     
     
+    ilosc_cyfr = len(str(int(width)*int(height)))
     
     with open('image_hash.txt', 'w') as plik:
         plik.write(f"{width}x{height};")
         for i in range(width):
             for j in range(height):
-                format_id = str(output_data[i,j,0]).zfill(6)
-                #print(output_data[i,j,0])
-                #print(format_id)
+                format_id = str(output_data[i,j,0]).zfill(ilosc_cyfr)
                 plik.write(format_id)
+    
 
-    #output_data_list = output_data.tolist()
+
+
+
+
+
+
+def encrypt_with_txt():
+
+    
+    image_name = "image1.png"
+    base_image = Image.open(image_name)
+    base_image = base_image.convert("RGBA")
+    pixels = base_image.load()
+
+    encrypted_image = Image.new("RGBA", encrypted_img.size)
+
+    with open('image_hash.txt', 'r') as plik:
+        tresc = plik.read()
+
+    width_enc, other = tresc.split("x")
+    other_split = other.split(";")
+    height_enc = int(other_split[0])
+    width_enc = int(width_dec)
+    liczba_enc = other_split[1]
+
+    width, height = image.size
+
+    if width!=width_enc and height!=height_enc:
+        print("Image is not size compatible with hash!")
+        return
+
     
     
+    hash = str(liczba_str)
+    ilosc_cyfr = len(str(int(width_dec)*int(height_dec)))
+    
+    
+    # Pętla do rozdzielania ciągu na liczby
+    liczby = []
+    for i in range(0, len(hash), ilosc_cyfr):
+        liczba = hash[i:i + ilosc_cyfr]
+        liczby.append(int(liczba))
+
+    pixel_data = []
+
+    
+
+    start_number = 0
+    for x in range(width_dec):
+        for y in range(height_dec):
+            pixel = encrypted_img.getpixel((x, y))
+            red, green, blue, alpha = pixel
+            pixel_data.append({"ID": liczby[start_number], "R": red, "G": green, "B": blue, "A": alpha})
+            start_number = start_number + 1
+
+    sorted_pixel_data = sorted(pixel_data, key=lambda x: x["ID"])
+
+    uno = 0
+    for x in range(width_dec):
+        for y in range(height_dec):
+            element = sorted_pixel_data[uno]
+            rgba = (element["R"], element["G"], element["B"], element["A"])
+            decrypted_img.putpixel((x, y), rgba)
+            uno = uno + 1
+            
+    
+    decrypted_img.show()
+    decrypted_img.save("obraz_decoded.png")
+
+
 
 def main():
     image_encrypt()
     decrypt()
+    #encrypt_with_txt()
     
 main()
 
