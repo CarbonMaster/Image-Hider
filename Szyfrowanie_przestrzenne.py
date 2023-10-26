@@ -1,29 +1,10 @@
-#NOTES:
-#Oh fuck yeah. It's all coming together.
-#Wymiary optymalne są do 500x500 rozmiaru
 
-#To do:
-#Zrobić elastyczność hasha na rozmiary większe i mniejsze
 
 
 from PIL import Image, ImageDraw
 import numpy as np
 import random
 import collections
-
-
-def find_ID_pixel(target_id):
-    target_id = int(target_id)
-    found = False
-    for i in range(height):
-        for j in range(width):
-            if image_data[i, j, 0] == target_id:
-                state = image_data[i, j, 1]
-                print(f"ID: {target_id}, X: {i}, Y: {j}, Stan dodatkowy: {state}")
-                found = True
-                break
-    if not found:
-        print(f"Brak piksela o ID: {target_id} w obrazie.")
         
 
 def decrypt():
@@ -243,13 +224,3 @@ main()
 
 
 
-#Zrobić klucz do losowego wstawiania pikseli
-#renderowanie klucza-ID do pliku tekstowego
-#zrobic klucz do identycznego rozkladania pikseli dla obrazow o identycznym rozmiarze
-
-
-#Zamiarem tego kodu jest aby obraz wyjściowy był losowo rozpierdolony
-#ale każdy piksel ma swoje ID na podstawie których można wstecznie ułożyć oryginalny obraz
-#kodem odszyfrowującym jest lista numerów ID pikseli w obrazie.
-#ilość maksymalną cyfr w ID można policzyć znając rozmiar obrazu.
-#dodac generowanie txt z hashem dla podanego rozmiaru obrazu, bez jego generowania
