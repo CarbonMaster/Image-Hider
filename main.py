@@ -4,6 +4,9 @@ import hashlib
 import tkinter as tk
 import random
 import collections
+#from colorama import Fore, Back, Style, init
+
+#init(autoreset=True)
 
 #root = tk.Tk()
 #root.title("Moja aplikacja")
@@ -30,17 +33,43 @@ def on_button_click():
 #Główna pętla programu
 
 
+null = None
 
 
-def define_image():
+def noise(image):
+    print("Insert how many times do you want to noise disrupt the image")
+    quant = get_value()
+    while i in range(quant):
+        #image = image.convert("RGBA")
+        img_array = np.array(image)
+        height, width, channels = img_array.shape
+        noise = np.random.randint(-25, 25, (height, width, channels), dtype=np.int8)
+        noisy_image = np.clip(img_array + noise, 0, 255).astype(np.uint8)
+        noisy_image = Image.fromarray(noisy_image)
+        i += 1
+    return noisy_image
+
+def get_value():
+    while True:
+        try:
+            quality = int(input())
+            break
+        except:
+            quality = None
+            print("!!!Wrong value inserted. Try again.!!!")
+    return quality
+
+def define_image(img_name):
     print("\nInput image name and extention (ex. image.png)")
     while True:
         try:
-            img_name = input()
+            if img_name is None:
+                img_name = input()
             test = Image.open(img_name)
             break
         except:
-            print("Wrong type of name inserted. Try again.")
+            img_name = None
+            print("!!!Wrong type of name inserted. Try again.!!!")
     return test
 
 
@@ -49,19 +78,33 @@ def show_image(image):
     while True:
         anwser = input()
         if anwser == "y" or anwser == "Y":
-            image.show()
+            image.show(title='Image')
             break
         if anwser == "n" or anwser == "N":
             break
         else:
-            print("Incorrect anwser. Try again. Insert y for Yes or n for No.")
+            print("!!!Incorrect anwser. Try again. Insert y for Yes or n for No.!!!")
 
 def save_file(image):
-    print("Call your output file (without extention), or press CTRL + C to abort.")
+    print("Call your output file (without extention),ENTER to skip saving, or CTRL + C to abort.")
     name = input()
     if name == "":
         return
     image.save(name+".png")
+
+
+def question():
+    while True:
+        anwser = input()
+        if anwser == "y" or anwser == "Y":
+            anw = True
+            break
+        if anwser == "n" or anwser == "N":
+            anw = False
+            break
+        else:
+            print("!!!Incorrect anwser. Try again. Insert y for Yes or n for No.!!!")
+    return anw
 
 
 
@@ -157,7 +200,10 @@ def alpha_encode():
     width1, height1 = image1.size
     width2, height2 = image2.size
 
-    modified_pixels = [round(100 * pixel / 255) for pixel in pixels1]
+    print("Insert value of image quality (from 0 to 255)")
+    quality = get_value()
+    
+    modified_pixels = [round(quality * pixel / 255) for pixel in pixels1]
     modified_image_temp = Image.new("RGBA", image1.size)
     modified_image_temp.putdata(modified_pixels)
 
@@ -206,10 +252,12 @@ def alpha_encode():
             r_res, g_res, b_res, a_res = result.getpixel((x, y))
 
             result.putpixel((x,y), (r_bg, g_bg, b_bg, a_res))
-            
-    #result = noise(result)
-    show_image(result)
 
+    print("Do you want to apply noise to whole output image? Reccomended for higher qualities of image! (y/n)")
+    if question() == True:    
+        #result = noise(result)
+        print()
+    show_image(result)
     save_file(result)    
     
     
@@ -217,7 +265,9 @@ def alpha_encode():
 
 #Tutaj dokonuje odzyskania obrazu z tego gowna
 def alpha_decode():
-    image_converted = define_image()
+    image_converted = define_image(null)
+
+    image_converted = image_converted.convert("RGBA")
 
     width_o, height_o = image_converted.size
 
@@ -235,6 +285,8 @@ def alpha_decode():
             min_alpha = temp
 
     temp = max_alpha - min_alpha
+    if temp == 0:
+        temp=255
 
     for x in range(width_o):
         for y in range(height_o):
@@ -246,7 +298,8 @@ def alpha_decode():
     #print(max_alpha)
     #print(min_alpha)
     #decoded_image.show()
-    decoded_image.save("decoded.png")
+    show_image(decoded_image)
+    save_file(decoded_image)
     return
 
 
@@ -259,14 +312,9 @@ def alpha_decode():
 
 
 def scamble():
-    print("Input name of image to scramble:")
-    while True:
-        try:
-            name = input()
-            image = Image.open(name)
-            break
-        except:
-            print("Wrong type of name inserted. Try again.")
+    print("Scrambling image chosen.")
+    image = define_image(null)
+
     print("Input scramble seed text:")
     text = input()
     sha256_hash = hashlib.sha256(text.encode()).hexdigest()
@@ -279,8 +327,8 @@ def scamble():
     shuffled_pixels = random.sample(pixels, len(pixels))
     image.putdata(shuffled_pixels)
 
-    # Zapisz obraz
-    image.show()
+    show_image(image)
+    save_file(image)
 
 
 
@@ -288,16 +336,7 @@ def scamble():
 
 
 
-def noise(image):
-    #image = image.convert("RGBA")
-    img_array = np.array(image)
-    height, width, channels = img_array.shape
-    noise = np.random.randint(-25, 25, (height, width, channels), dtype=np.int8)
-    noisy_image = np.clip(img_array + noise, 0, 255).astype(np.uint8)
-    noisy_image = Image.fromarray(noisy_image)
-    #noisy_image.show()
-    #noisy_image.save("miau.png")
-    return noisy_image
+
 
 
 
@@ -307,7 +346,7 @@ def noise(image):
 
 
 def lsd():
-    image = define_image()
+    image = define_image(null)
     image = image.convert("RGBA")
     image_array = np.array(image)
 
@@ -325,7 +364,7 @@ def lsd():
         return encrypted_value
 
     # Wprowadź hasło od użytkownika
-    password = input("Podaj hasło: ")
+    password = input("Podaj ziarno szyfrowania: ")
 
     # Szyfruj obraz
     encrypted_image_array = np.copy(image_array)
@@ -343,10 +382,9 @@ def lsd():
     encrypted_image = Image.fromarray(encrypted_image_array)
     decrypted_image = Image.fromarray(decrypted_image_array)
 
-    # Wyświetl obrazy
-    #image.show(title='Oryginalny obraz')
-    encrypted_image.show(title='Zaszyfrowany obraz')
-    #decrypted_image.show(title='Odszyfrowany obraz')
+
+    show_image(encrypted_image)
+    save_file(encrypted_image)
 
 
 
@@ -361,8 +399,7 @@ def calculate_coordinates(ID, width, height):
     return x, y
 
 def hash_image():
-    print("\nInput image name and extention (ex. image1.png)")
-    image = define_image()
+    image = define_image(null)
     #image = Image.open(image_name)
     image = image.convert("RGBA")
     pixels = image.load()
@@ -401,19 +438,24 @@ def hash_image():
         obraz.putpixel((x_out, y_out), pixel_value)
         output_data[x_out,y_out,0]=image_data[x, y, 0]
             
-    obraz.show()
-    obraz.save("obraz_en.png")
+    show_image(obraz)
+    save_file(obraz)
 
     
     
     ilosc_cyfr = len(str(int(width)*int(height)))
+
+    print("Input hash txt file name...")
+    txt_name = (input() + ".txt")
     
-    with open('image_hash.txt', 'w') as plik:
+    with open(txt_name, 'w') as plik:
         plik.write(f"{width}x{height};")
         for i in range(width):
             for j in range(height):
                 format_id = str(output_data[i,j,0]).zfill(ilosc_cyfr)
                 plik.write(format_id)
+
+
 
 def load_txt():
     print("\nInput hash txt file name")
@@ -429,7 +471,7 @@ def load_txt():
 
 def hash_decrypt():
     
-    encrypted_img = define_image()
+    encrypted_img = define_image(null)
     encrypted_img = encrypted_img.convert("RGBA")
     pixels = encrypted_img.load()
 
@@ -473,10 +515,9 @@ def hash_decrypt():
             rgba = (element["R"], element["G"], element["B"], element["A"])
             decrypted_img.putpixel((x, y), rgba)
             uno = uno + 1
-            
-    
-    decrypted_img.show()
-    decrypted_img.save("obraz_decoded.png")
+
+    show_image(decrypted_img)
+    save_file(decrypted_img)
 
 def hash_with_txt():
     image_name = "image1.png"
@@ -517,16 +558,8 @@ def hash_with_txt():
             red, green, blue, alpha = pixel
             pixel_data.append({"ID": start_number, "R": red, "G": green, "B": blue, "A": alpha})
             start_number = start_number + 1
-    #indeksy_sortowania = sorted(range(len(liczby)), key=lambda x: liczby[x])
-    #pixel_data_posortowana = [pixel_data[i] for i in indeksy_sortowania]
-
     id_to_indeks = {id_value: i for i, id_value in enumerate(liczby)}
     pixel_data_posortowana = sorted(pixel_data, key=lambda x: id_to_indeks[x["ID"]])
-
-    #print(pixel_data[1])
-    #print(pixel_data_posortowana[1])
-    #print(liczby[1])
-
     uno = 0
     for x in range(width_enc):
         for y in range(height_enc):
@@ -534,16 +567,244 @@ def hash_with_txt():
             rgba = (element["R"], element["G"], element["B"], element["A"])
             encrypted_image.putpixel((x, y), rgba)
             uno = uno + 1
-    encrypted_image.show()
-    encrypted_image.save("image_encrypted_txt.png")
+
+    show_image(encrypted_image)
+    save_file(encrypted_image)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def hash_encrypt_short(image):
+    image = define_image(null)
+    image = image.convert("RGBA")
+    pixels = image.load()
+
+    obraz = Image.new("RGBA", image.size)
+    obraz2 = Image.new("RGBA", image.size)
+
+    width, height = image.size
+
+    image_data = np.zeros((width, height, 1), dtype=int)
+    output_data = np.zeros((width, height, 1), dtype=int)
+    wolne = []
+
+    id_counter = 1
+
+    for i in range(0,width):
+        for j in range(0,height):
+            #print(j)
+            image_data[i, j, 0] = id_counter  # Unikatowy numer ID
+            wolne.append(id_counter)
+            id_counter = id_counter + 1
+
+    available_coordinates = [(x, y) for x in range(width) for y in range(height)]
+
+    while wolne:
+        rand_index = random.randrange(0,len(wolne))
+        ID_choose = wolne[rand_index]
+        wolne.pop(rand_index)
+        y, x = calculate_coordinates(ID_choose, width, height)
+        pixel_value = image.getpixel((x, y))
+
+        random_index = random.randint(0, len(available_coordinates) - 1)
+        random_cell = available_coordinates.pop(random_index)
+        x_out, y_out = random_cell
+        obraz.putpixel((x_out, y_out), pixel_value)
+        output_data[x_out,y_out,0]=image_data[x, y, 0]
+
+    return hashed_image
+
+
+
+    
+
+
+def alpha_encrypt_short(image):
+    print("\nEncoding procedure.\nRemember, that smaller image will be encoded in the larger one, or the first in the second!\nTarget images have to be in current folder.")
+
+    print("\nInput first image name and extention (ex. image1.png)")
+
+    while True:
+        try:
+            img1_name = input()
+            test = Image.open(img1_name)
+            break
+        except:
+            print("Wrong type of name inserted. Try again.")
+    
+    print("\nInput second image name and extention (ex. image2.png)")
+
+    while True:
+        try:
+            img2_name = input()
+            test = Image.open(img2_name)
+            break
+        except:
+            print("Wrong type of name inserted. Try again.")
+    
+    t_image1 = Image.open(img1_name)
+    t_image2 = Image.open(img2_name)
+    t_width1, t_height1 = t_image1.size
+    t_width2, t_height2 = t_image2.size
+    
+    
+    if t_width1 * t_height1 >= t_width2 * t_height2:
+        #Obraz 2 jest wiadomoscia
+        if t_width1>=t_width2 and t_height1>=t_height2:
+            image2 = Image.open(img1_name)
+            image1 = Image.open(img2_name)
+        else:
+            print("Images are not compatible to conversion due to size limits)")
+    elif t_width1 * t_height1 < t_width2 * t_height2:
+        #Obraz 1 jest wiadomoscia
+        if t_width2>=t_width1 and t_height2>=t_height1:
+            image1 = Image.open(img1_name)
+            image2 = Image.open(img2_name)
+        else:
+            print("Images are not suitable to conversion due to size limits")
+            
+    return image1, image2
+
+    print("Encoding...") 
+
+    image1 = image1.convert("RGBA")
+    #image2 = image2.convert("RGB")
+    image2 = image2.convert("RGBA")
+    
+    pixels1 = image1.load()
+    pixels2 = image2.load()
+
+    width_1, height_1 = image1.size
+    for x in range(width_1):
+        for y in range(height_1):
+            r, g, b, a = pixels1[x, y]
+            a = 255  # Ustaw kanał alfa na maksymalną wartość (255)
+            pixels1[x, y] = (r, g, b, a)
+
+    width_2, height_2 = image2.size
+    #for x in range(width_2):
+        #for y in range(height_2):
+            #r, g, b, a = pixels2[x, y]
+            #a = 255  # Ustaw kanał alfa na maksymalną wartość (255)
+            #pixels2[x, y] = (r, g, b, a)
+
+    for x in range(width_1):
+        for y in range(height_1):
+            r, g, b, a = pixels1[x, y]
+            r = round(r * (a / 255))
+            g = round(g * (a / 255))
+            b = round(b * (a / 255))
+            pixels1[x, y] = (r, g, b, a)    
+    
+    
+    image1 = image1.convert("L")
+
+    # Pobierz dane pikseli z obrazow
+    pixels1 = list(image1.getdata())
+    pixels2 = list(image2.getdata())
+
+    # Porównaj rozmiary obrazów
+    width1, height1 = image1.size
+    width2, height2 = image2.size
+
+    print("Insert value of image quality (from 0 to 255)")
+    quality = get_value()
+    
+    modified_pixels = [round(quality * pixel / 255) for pixel in pixels1]
+    modified_image_temp = Image.new("RGBA", image1.size)
+    modified_image_temp.putdata(modified_pixels)
+
+    red_channel = modified_image_temp.split()[0]
+    modified_image_temp.putalpha(red_channel)
+
+    new_image = Image.new("RGBA", modified_image_temp.size, (0, 0, 0, 0))
+    new_image.putalpha(modified_image_temp.split()[3])
+
+    image2.putalpha(255)
+    background = image2.convert("RGBA")
+
+    white_background = Image.new("RGBA", image2.size)
+
+    for y in range(white_background.height):
+        for x in range(white_background.width):
+            r_bg, g_bg, b_bg, a_bg = background.getpixel((x,y))
+            white_background.putpixel((x,y),(r_bg, g_bg, b_bg, 255))        
+    
+    top_image = new_image.convert("RGBA")
+    
+    bg_width, bg_height = white_background.size
+
+    result = Image.new("RGBA", (bg_width, bg_height))
+    result.paste(white_background, (0, 0))
+    
+    paste_x = (bg_width - top_image.width) // 2
+    paste_y = (bg_height - top_image.height) // 2
+    
+    for y in range(top_image.height):
+        for x in range(top_image.width):
+            r_bg, g_bg, b_bg, a_bg = white_background.getpixel((paste_x + x, paste_y + y))
+            r_top, g_top, b_top, a_top = top_image.getpixel((x, y))
+            new_alpha = a_bg - a_top
+            new_alpha = max(0, min(255, new_alpha))
+            result.putpixel((paste_x + x, paste_y + y), (0, 0, 0, new_alpha))
+
+    for y in range(background.height):
+        for x in range(background.width):
+            r_bg, g_bg, b_bg, a_bg = white_background.getpixel((x,y))
+            #if r_bg==0 and g_bg==0 and b_bg ==0:
+            #    r_bg=255
+            #    g_bg=255
+            #    b_bg=255
+
+            r_res, g_res, b_res, a_res = result.getpixel((x, y))
+
+            result.putpixel((x,y), (r_bg, g_bg, b_bg, a_res))
+
+    print("Do you want to apply noise to whole output image? Reccomended for higher qualities of image! (y/n)")
+    if question() == True:    
+        result = noise(result)
+    show_image(result)
+    save_file(result)    
+    
+    
+    return GSDFHzxgjchkjkl
+
+
+
+
+
+
 
 
 
 def full_encrypt():
-    print()
+    print("Not ready yet.")
+    messeage = hash_encrypt_short()
+    result = alpha_encrypt_short(messeage)
+    show_image(result)
+    save_file(result)  
+
+    
 
 def full_decrypt():
-    print()
+    print("Not ready yet.")
+
+
+
+
+
+
+
 
 
 
@@ -552,6 +813,7 @@ def full_decrypt():
 def main():
     #root.mainloop()
     try:
+        
         while True:
             print("\nInput desired operation number: ")
             print("\n 1 - Encode messeage in alpha\n 2 - Decode alpha messeeage\n 3 - Scramble an image")
@@ -580,10 +842,11 @@ def main():
             elif (Input == ("help")):
                 print("yes, I can't help myself")
             else:
-                print("Wrong selection!")
-            if (Input == ("1" or "2" or "3")):
+                print("!!!Wrong selection!!!")
+                Input = "0"
+            if "1" in Input or "2" in Input or "3" in Input or "4" in Input or "5" in Input or "6" in Input or "7" in Input or "8" in Input:
                 print("\nOperation succesful. If you want to perform another action, enter it's number.")
-            Input = 0
+            
             
             
 
@@ -631,3 +894,5 @@ main()
 
 #Kazda funkcja ma miec pytanie o nazwy plikow otwieranych i zapisywanych
 #kazda f. ma pytac czy ZAPISAC obraz i go wyswietlic
+
+#punkty do zrobienia: 2,3,4,5,6,7,8
