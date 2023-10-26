@@ -33,6 +33,7 @@ def on_button_click():
 
 
 def define_image():
+    print("\nInput image name and extention (ex. image.png)")
     while True:
         try:
             img_name = input()
@@ -43,7 +44,24 @@ def define_image():
     return test
 
 
+def show_image(image):
+    print("Do you want to show output image? (y/n)")
+    while True:
+        anwser = input()
+        if anwser == "y" or anwser == "Y":
+            image.show()
+            break
+        if anwser == "n" or anwser == "N":
+            break
+        else:
+            print("Incorrect anwser. Try again. Insert y for Yes or n for No.")
 
+def save_file(image):
+    print("Call your output file (without extention), or press CTRL + C to abort.")
+    name = input()
+    if name == "":
+        return
+    image.save(name+".png")
 
 
 
@@ -95,18 +113,7 @@ def alpha_encode():
         else:
             print("Images are not suitable to conversion due to size limits (dos)")
             
-    print("Do you want to show output image? (y/n)")
-    show = False
-    while True:
-        anwser = input()
-        if anwser == "y" or anwser == "Y":
-            show_img = True
-            break
-        if anwser == "n" or anwser == "N":
-            show_img = False
-            break
-        else:
-            print("Incorrect anwser. Try again. Insert y for Yes or n for No.")
+    
 
     print("Encoding...") 
 
@@ -201,19 +208,16 @@ def alpha_encode():
             result.putpixel((x,y), (r_bg, g_bg, b_bg, a_res))
             
     #result = noise(result)
-    if show_img == True:
-        result.show()
+    show_image(result)
 
-        
-    print("Call your output file (without extention), or press CTRL + C to abort.")
+    save_file(result)    
     
-    result.save(input()+".png")
     
     return
 
 #Tutaj dokonuje odzyskania obrazu z tego gowna
 def alpha_decode():
-    image_converted = Image.open("encoded.png")
+    image_converted = define_image()
 
     width_o, height_o = image_converted.size
 
@@ -240,7 +244,7 @@ def alpha_decode():
 
             decoded_image.putpixel((x, y), new_pixel)
     #print(max_alpha)
-    print(min_alpha)
+    #print(min_alpha)
     #decoded_image.show()
     decoded_image.save("decoded.png")
     return
@@ -411,16 +415,27 @@ def hash_image():
                 format_id = str(output_data[i,j,0]).zfill(ilosc_cyfr)
                 plik.write(format_id)
 
+def load_txt():
+    print("\nInput hash txt file name")
+    while True:
+        try:
+            txt_name = (input()+ ".txt")
+            open(txt_name, 'r')
+            break
+        except:
+            print("Wrong type of name inserted. Try again.")
+    return txt_name
+
+
 def hash_decrypt():
     
-    image_name = "obraz_en.png"
-    encrypted_img = Image.open(image_name)
+    encrypted_img = define_image()
     encrypted_img = encrypted_img.convert("RGBA")
     pixels = encrypted_img.load()
 
     decrypted_img = Image.new("RGBA", encrypted_img.size)
-
-    with open('image_hash.txt', 'r') as plik:
+    txt_name = load_txt()
+    with open(txt_name, 'r') as plik:
         tresc = plik.read()
 
     width_dec, other = tresc.split("x")
@@ -524,8 +539,11 @@ def hash_with_txt():
 
 
 
+def full_encrypt():
+    print()
 
-
+def full_decrypt():
+    print()
 
 
 
@@ -550,11 +568,11 @@ def main():
             elif (Input == "4"):
                 hash_image()
             elif (Input == "5"):
-                break
+                hash_decrypt()
             elif (Input == "6"):
-                break
+                full_encrypt()
             elif (Input == "7"):
-                break
+                full_decrypt()
             elif (Input == "8"):
                 lsd()
             elif (Input == "9"):
@@ -611,3 +629,5 @@ main()
 #dodac generowanie txt z hashem dla podanego rozmiaru obrazu, bez jego generowania
 
 
+#Kazda funkcja ma miec pytanie o nazwy plikow otwieranych i zapisywanych
+#kazda f. ma pytac czy ZAPISAC obraz i go wyswietlic
