@@ -224,7 +224,7 @@ def encrypt_with_txt():
             
     
     encrypted_image.show()
-    encrypted_image.save("image_encrypted.png")
+    encrypted_image.save("image_encrypted_txt.png")
 
 
 
@@ -252,3 +252,4 @@ main()
 #ale każdy piksel ma swoje ID na podstawie których można wstecznie ułożyć oryginalny obraz
 #kodem odszyfrowującym jest lista numerów ID pikseli w obrazie.
 #ilość maksymalną cyfr w ID można policzyć znając rozmiar obrazu.
+#dodac generowanie txt z hashem dla podanego rozmiaru obrazu, bez jego generowania
