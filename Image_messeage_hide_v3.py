@@ -87,7 +87,10 @@ def encode():
     
 
     image1 = image1.convert("RGBA")
+    #image2 = image2.convert("RGB")
     image2 = image2.convert("RGBA")
+    
+    
 
     pixels1 = image1.load()
     pixels2 = image2.load()
@@ -103,8 +106,8 @@ def encode():
     for x in range(width_2):
         for y in range(height_2):
             r, g, b, a = pixels2[x, y]
-            a = 255  # Ustaw kanał alfa na maksymalną wartość (255)
-            pixels2[x, y] = (r, g, b, a)
+            #a = 255  # Ustaw kanał alfa na maksymalną wartość (255)
+            #pixels2[x, y] = (r, g, b, a)
 
     for x in range(width_1):
         for y in range(height_1):
@@ -113,12 +116,14 @@ def encode():
             g = round(g * (a / 255))
             b = round(b * (a / 255))
             pixels1[x, y] = (r, g, b, a)
-
+    
     #image1.putalpha(255)
-    #image2.putalpha(255)
+    
+    
+    
     
     image1 = image1.convert("L")
-    image2 = image2.convert("L")
+    #image2 = image2.convert("L")
 
     # Pobierz dane pikseli z obrazow
     pixels1 = list(image1.getdata())
@@ -143,33 +148,43 @@ def encode():
     new_image = Image.new("RGBA", modified_image_temp.size, (0, 0, 0, 0))
     new_image.putalpha(modified_image_temp.split()[3])
 
+    image2.putalpha(255)
     background = image2.convert("RGBA")
+
+    white_background = Image.new("RGBA", image2.size)
+
+    for y in range(white_background.height):
+        for x in range(white_background.width):
+            r_bg, g_bg, b_bg, a_bg = background.getpixel((x,y))
+            white_background.putpixel((x,y),(r_bg, g_bg, b_bg, 255))
+            
+    white_background.show()        
     
     top_image = new_image.convert("RGBA")
     
-    bg_width, bg_height = background.size
+    bg_width, bg_height = white_background.size
 
     result = Image.new("RGBA", (bg_width, bg_height))
-    result.paste(background, (0, 0))
+    result.paste(white_background, (0, 0))
     
     paste_x = (bg_width - top_image.width) // 2
     paste_y = (bg_height - top_image.height) // 2
     
-    background = image3.convert("RGBA")
+    #background = image3.convert("RGBA")
 
-    for y in range(background.height):
-        for x in range(background.width):
-            r_bg, g_bg, b_bg, a_bg = background.getpixel((x,y))
-            if r_bg==0 and g_bg==0 and b_bg ==0:
-                r_bg=255
-                g_bg=255
-                b_bg=255
-                a_bg=255
-            background.putpixel((x,y),(r_bg, g_bg, b_bg, a_bg))
+   # for y in range(white_background.height):
+   #     for x in range(white_background.width):
+   #         r_bg, g_bg, b_bg, a_bg = white_background.getpixel((x,y))
+   #         if r_bg==0 and g_bg==0 and b_bg ==0:
+            #    r_bg=255
+            #    g_bg=255
+            #    b_bg=255
+            #    a_bg=255
+            #white_background.putpixel((x,y),(r_bg, g_bg, b_bg, a_bg))
     
     for y in range(top_image.height):
         for x in range(top_image.width):
-            r_bg, g_bg, b_bg, a_bg = background.getpixel((paste_x + x, paste_y + y))
+            r_bg, g_bg, b_bg, a_bg = white_background.getpixel((paste_x + x, paste_y + y))
             
             r_top, g_top, b_top, a_top = top_image.getpixel((x, y))
             new_alpha = a_bg - a_top
@@ -182,7 +197,7 @@ def encode():
 
     for y in range(background.height):
         for x in range(background.width):
-            r_bg, g_bg, b_bg, a_bg = background.getpixel((x,y))
+            r_bg, g_bg, b_bg, a_bg = white_background.getpixel((x,y))
             if r_bg==0 and g_bg==0 and b_bg ==0:
                 r_bg=255
                 g_bg=255
@@ -191,7 +206,8 @@ def encode():
             r_res, g_res, b_res, a_res = result.getpixel((x, y))
 
             result.putpixel((x,y), (r_bg, g_bg, b_bg, a_res))
-
+            
+    
     if show_img == True:
         result.show()
 
@@ -199,7 +215,7 @@ def encode():
     print("Call your output file (without extention), or press CTRL + C to abort.")
 
     #result.save(input()+".png")
-    result.save("encode.png")
+    result.save("encoded.png")
     
     return
 
@@ -225,7 +241,7 @@ def decode():
     for pixel in pixels:
         temp = pixel[3]
 
-        if temp < min_alpha:
+        if temp < min_alpha and temp > 0:
             min_alpha = temp
 
     temp = max_alpha - min_alpha
@@ -233,7 +249,7 @@ def decode():
     for x in range(width_o):
         for y in range(height_o):
             alpha_value = pixels[y * width_o + x][3]  # Odczytaj wartość alfa (A)
-
+            
             #if alpha_value < 255:
             #    alpha_value = 255 - alpha_value
     
@@ -242,16 +258,19 @@ def decode():
             #if alpha_value < min_alpha:
             #    min_alpha = temp
 
-            alpha_value = int((alpha_value - min_alpha) / (max_alpha - min_alpha) * 255)
-
+            #alpha_value = int((alpha_value - min_alpha) / (max_alpha - min_alpha) * 255)
+            #print(alpha_value)
+            alpha_value = round(((255-alpha_value)/temp)*255)
             new_pixel = (alpha_value, alpha_value, alpha_value, 255)
 
             decoded_image.putpixel((x, y), new_pixel)
 
-    print(max_alpha)
+    #print(max_alpha)
     print(min_alpha)
+
+
     
-    decoded_image.show()
+    #decoded_image.show()
     decoded_image.save("decoded.png")
     return
 
@@ -294,4 +313,5 @@ main()
 #Dodać funkcję image scramble
 #Dodać kodowanie na background jako pusty obraz, rozmiarowo identyczny jak wiadomość
 
+#Z obrazu background trzeba usuwać całą przezroczystość, dosłownie. lub nakladac same wartosci rgb na obraz bialy
 
