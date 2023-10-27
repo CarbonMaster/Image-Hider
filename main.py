@@ -6,6 +6,8 @@ import random
 import collections
 from pyzbar.pyzbar import decode
 import cv2
+import qrcode
+import string
 #from colorama import Fore, Back, Style, init
 
 #init(autoreset=True)
@@ -38,18 +40,24 @@ def on_button_click():
 null = None
 
 
+def generate_random_string(length):
+    letters = string.ascii_letters  # Możesz użyć `string.ascii_lowercase` lub `string.ascii_uppercase` lub `string.ascii_letters`
+    result = ''.join(random.choice(letters) for _ in range(length))
+    return result
+
 def noise(image):
     print("Insert how many times do you want to noise disrupt the image")
     quant = get_value()
-    while i in range(quant):
+    i = 0
+    while i in range(0,quant):
         img_array = np.array(image)
         height, width, channels = img_array.shape
         noise = np.random.randint(-25, 25, (height, width, channels - 1), dtype=np.int8)
-        noisy_image = np.clip(img_array[:, :, :channels-1] + noise, 0, 255).astype(np.uint8)
-        noisy_image = np.dstack((noisy_image, img_array[:, :, -1]))  # Zachowaj kanał alfa
-        noisy_image = Image.fromarray(noisy_image)
+        image = np.clip(img_array[:, :, :channels-1] + noise, 0, 255).astype(np.uint8)
+        image = np.dstack((image, img_array[:, :, -1]))  # Zachowaj kanał alfa
+        image = Image.fromarray(image)
         i += 1
-    return noisy_image
+    return image
 
 def get_value():
     while True:
@@ -80,6 +88,8 @@ def define_image_qr(img_name):
         try:
             if img_name is None:
                 img_name = input()
+                if img_name == "" or img_name == None:
+                    return img_name
             test = cv2.imread(img_name)
             break
         except:
@@ -120,6 +130,15 @@ def question():
         else:
             print("!!!Incorrect anwser. Try again. Insert y for Yes or n for No.!!!")
     return anw
+
+
+
+
+
+
+
+
+
 
 
 
@@ -270,8 +289,7 @@ def alpha_encode():
 
     print("Do you want to apply noise to whole output image? Reccomended for higher qualities of image! (y/n)")
     if question() == True:    
-        #result = noise(result)
-        print()
+        result = noise(result)
     show_image(result)
     save_file(result)    
     
@@ -802,6 +820,9 @@ def alpha_encrypt_short(image):
 
 
 
+
+
+
 def full_encrypt():
     print("Not ready yet.")
     messeage = hash_encrypt_short()
@@ -823,12 +844,207 @@ def full_decrypt():
 
 
 
+
+def choose_color():
+    while True:
+        print("\nChoose fill color for QR code.\n -1- White\n -2- Black\n -3- Red\n -4- Green\n -5- Blue\n -6- Define your own!\n")
+        Input = input()
+        if Input == "1":
+            col1 = "white"
+            break
+        elif Input == "2":
+            col1 = "black"
+            break
+        elif Input == "3":
+            col1 = "red"
+            break
+        elif Input == "4":
+            col1 = "green"
+            break
+        elif Input == "5":
+            col1 = "blue"
+            break
+        elif Input == "6":
+            print("Choose color values between 0 and 255!")
+            while True:
+                while True:
+                    print("Insert Red value")
+                    R = input()
+                    if int(R) not in range(0,255):
+                        R = "0"
+                        print("Wrong value")
+                    else:
+                        break
+                while True:
+                    print("Insert Red value")
+                    G = input()
+                    if int(G) not in range(0,255):
+                        G = "0"
+                        print("Wrong value")
+                    else:
+                        break
+                while True:
+                    print("Insert Red value")
+                    B = input()
+                    if int(B) not in range(0,255):
+                        B = "0"
+                        print("Wrong value")
+                    else:
+                        break
+                    break 
+            col1 = "#" + R + G + B
+            break
+        else:
+            you = generate_random_string(10)
+            print(f"Wrong choice {you}!")
+            Input = "0"
+        break
+
+    while True:
+        print("\nChoose BACKGROUND color for QR code.\n -1- White\n -2- Black\n -3- Red\n -4- Green\n -5- Blue\n -6- Define your own!\n")
+        Input = input()
+        if Input == "1":
+            col2 = "white"
+            break
+        elif Input == "2":
+            col2 = "black"
+            break
+        elif Input == "3":
+            col2 = "red"
+            break
+        elif Input == "4":
+            col2 = "green"
+            break
+        elif Input == "5":
+            col2 = "blue"
+            break
+        elif Input == "6":
+            print("Choose color values between 0 and 255!")
+            print("Insert Red value")
+            while True:
+                Red = input()
+                if int(Red) in range(0, 255):
+                    break
+                else:
+                    print("Wrong value")
+
+            print("Insert Green value")
+            while True:
+                Green = input()
+                if int(Green) in range(0, 255):
+                    break
+                else:
+                    print("Wrong value")
+
+            print("Insert Blue value")
+            while True:
+                Blue = input()
+                if int(Blue) in range(0, 255):
+                    break
+                else:
+                    print("Wrong value")
+
+            col2 = "#" + R + G + B
+            break
+        else:
+            print("Wrong choice !")
+            Input = "0"
+        break
+        
+    
+    return col1, col2
+
+def split_data(data, max_length):
+    data_blocks = []
+    while data:
+        data_block, data = data[:max_length], data[max_length:]
+        data_blocks.append(data_block)
+    return data_blocks
+
+def qr_from_txt_encode(max_length):
+    txt_name = load_txt()
+    
+    with open(txt_name, 'r') as plik:
+        data_txt = plik.read()
+        data = split_data(data_txt, max_length)
+
+    while True:
+        print("\nInput name for QR files, or press ENTER to cancel. Files will not be shown.")
+        name = input()
+        if name == "" or name == None:
+            return
+        break
+    print("Encoding...")
+    for i, data in enumerate(data):
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(data)
+        qr.make(fit=True)
+        img = qr.make_image(fill_color="black", back_color="white")
+
+        filename = f"{name}_{i+1}.png"
+        img.save(filename)   
+
+def qr_regular(data_to_encode):
+    print("Encoding...")
+    # Utwórz obiekt QRCode
+    qr = qrcode.QRCode(
+        version=1,  # Wersja kodu QR (może być dostosowana)
+        error_correction=qrcode.constants.ERROR_CORRECT_L,  # Rodzaj korekcji błędów
+        box_size=10,  # Rozmiar pojedynczego piksela (zależy od rozmiaru kodu QR)
+        border=4,  # Margines w pikselach
+    )
+
+    # Dodaj dane do zakodowania
+    qr.add_data(data_to_encode)
+    qr.make(fit=True)
+
+    col1, col2 = choose_color()
+    
+    # Tworzenie obiektu Image z kodem QR
+    img = qr.make_image(fill_color=col1, back_color=col2)
+
+    # Zapisz obraz kodu QR do pliku
+    show_image(img)
+    save_file(img)
+
 def qr_encode():
+    max_length = 4000
     print("Not ready yet.")
+    
+    print("\nChoose data to convert:\n -1- Written data\n -2- Txt file\n -3- Other file\n -back- Return\n\n WARNING: Input file cannot be more than 6,86 KB of size in written data!")
+    print("(Or the image hash you may be trying to hide may not be higher than 1766 pixels in total, aprox. 50x32 pixels)\n")
+    Input = input()
+    while True:
+        if Input == "1":
+            print("\nInsert data to enter into QR code:\n")
+            data_to_encode = input()
+            qr_regular(data_to_encode)
+            break
+        elif Input == "2":
+            qr_from_txt_encode(max_length)
+            break
+        elif Input == "3":
+            print("Not ready yet.")
+            break
+        elif Input == "back":
+            break
+        else:
+            print("!!!Wrong selection!!!")
+            Input = "0"
+    
+ 
+    
 
 
 def qr_decode():
     image = define_image_qr(None)
+    if image=="" or image == None:
+        return
     decoded_objects = decode(image)
     for obj in decoded_objects:
         print("Data:\n", obj.data)
@@ -843,7 +1059,7 @@ def qr_decode():
 
 def qr():
     while True:
-        print("Choose what do You want to do with QR:\n -1- Encode an QR image\n -2- Read an QR image\n -3- Return to main menu")
+        print("\nChoose what do You want to do with QR:\n -1- Encode an QR image\n -2- Read an QR image\n -3- Return to main menu\n")
         Input = input()
         if (Input == "1"):
             qr_encode()
@@ -856,6 +1072,15 @@ def qr():
             Input = "0"
         if "1" in Input or "2" in Input:
             print("\nOperation succesful. If you want to perform another action, enter it's number.")
+
+
+
+
+
+
+
+
+
 
 def main():
     #root.mainloop()
@@ -914,10 +1139,10 @@ main()
 
 #To do:
 #Zrobić elastyczność hasha na rozmiary większe i mniejsze
+#alpha_encrypt_short
 
 #LEft to do:
 #Interfejs graficzny
-#Określanie które obrazy do konwersji
 #Dodatkowe utrudnienie w dostrzeżeniu szyfrowania poprzez dodanie wachań wartości kolorów
 #Zmniejszanie obrazu wyjściowego ma bazie braku kolorów
 #Dodać kodowanie na background jako pusty obraz, rozmiarowo identyczny jak wiadomość
@@ -949,3 +1174,9 @@ main()
 
 
 #zapis danych z qr do pliku tekstowego
+#po rozpoczeciu kazdego zadania lub podzadania musi byc \n
+
+#Dodać pisanie wiadomości w formie pikselowych liter
+#Rozmiar litery równy (7x4)[y/x]
+#Przerwa mniedzy literami wynosi jedna kolumna bialych pikseli.
+#Chcę zrobic program ktory bedzie konwertować wprowadzane znaki na pikselowe reprezentacje 7x5 które
