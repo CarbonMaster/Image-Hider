@@ -4,6 +4,8 @@ import hashlib
 import tkinter as tk
 import random
 import collections
+from pyzbar.pyzbar import decode
+import cv2
 #from colorama import Fore, Back, Style, init
 
 #init(autoreset=True)
@@ -40,11 +42,11 @@ def noise(image):
     print("Insert how many times do you want to noise disrupt the image")
     quant = get_value()
     while i in range(quant):
-        #image = image.convert("RGBA")
         img_array = np.array(image)
         height, width, channels = img_array.shape
-        noise = np.random.randint(-25, 25, (height, width, channels), dtype=np.int8)
-        noisy_image = np.clip(img_array + noise, 0, 255).astype(np.uint8)
+        noise = np.random.randint(-25, 25, (height, width, channels - 1), dtype=np.int8)
+        noisy_image = np.clip(img_array[:, :, :channels-1] + noise, 0, 255).astype(np.uint8)
+        noisy_image = np.dstack((noisy_image, img_array[:, :, -1]))  # Zachowaj kanał alfa
         noisy_image = Image.fromarray(noisy_image)
         i += 1
     return noisy_image
@@ -66,6 +68,19 @@ def define_image(img_name):
             if img_name is None:
                 img_name = input()
             test = Image.open(img_name)
+            break
+        except:
+            img_name = None
+            print("!!!Wrong type of name inserted. Try again.!!!")
+    return test
+
+def define_image_qr(img_name):
+    print("\nInput image name and extention (ex. image.png)")
+    while True:
+        try:
+            if img_name is None:
+                img_name = input()
+            test = cv2.imread(img_name)
             break
         except:
             img_name = None
@@ -808,7 +823,39 @@ def full_decrypt():
 
 
 
+def qr_encode():
+    print("Not ready yet.")
 
+
+def qr_decode():
+    image = define_image_qr(None)
+    decoded_objects = decode(image)
+    for obj in decoded_objects:
+        print("Data:\n", obj.data)
+    print("Do you want to save output data to .txt file? (y/n)")
+    if question() == True:
+        print("Input output txt file name...")
+        txt_name = (input() + ".txt")
+        with open(txt_name, 'w') as plik:
+            plik.write(str(obj.data))
+            print("File saved.")
+
+
+def qr():
+    while True:
+        print("Choose what do You want to do with QR:\n -1- Encode an QR image\n -2- Read an QR image\n -3- Return to main menu")
+        Input = input()
+        if (Input == "1"):
+            qr_encode()
+        elif (Input == "2"):
+            qr_decode()
+        elif (Input == "3"):
+            return
+        else:
+            print("!!!Wrong selection!!!")
+            Input = "0"
+        if "1" in Input or "2" in Input:
+            print("\nOperation succesful. If you want to perform another action, enter it's number.")
 
 def main():
     #root.mainloop()
@@ -818,8 +865,8 @@ def main():
             print("\nInput desired operation number: ")
             print("\n 1 - Encode messeage in alpha\n 2 - Decode alpha messeeage\n 3 - Scramble an image")
             print(" 4 - Hash an image\n 5 - Dehash an image\n 6 - Full Encryption of Image\n 7 - Full decryption of Image")
-            print(" 8 - Perform LSD on an Image\n 9 - Leave program")
-            print("\n Or write 'help' for help!")
+            print(" 8 - Perform LSD on an Image\n 9 - QR Codes\n exit - Leave program")
+            print("\n Or write 'help' for help!\n")
             Input = input()
             if (Input == "1"):
                 alpha_encode()
@@ -838,13 +885,15 @@ def main():
             elif (Input == "8"):
                 lsd()
             elif (Input == "9"):
+                qr()
+            elif (Input == "exit"):
                 break
             elif (Input == ("help")):
                 print("yes, I can't help myself")
             else:
                 print("!!!Wrong selection!!!")
                 Input = "0"
-            if "1" in Input or "2" in Input or "3" in Input or "4" in Input or "5" in Input or "6" in Input or "7" in Input or "8" in Input:
+            if "1" in Input or "2" in Input or "3" in Input or "4" in Input or "5" in Input or "6" in Input or "7" in Input or "8" in Input or "9" in Input:
                 print("\nOperation succesful. If you want to perform another action, enter it's number.")
             
             
@@ -896,3 +945,7 @@ main()
 #kazda f. ma pytac czy ZAPISAC obraz i go wyswietlic
 
 #punkty do zrobienia: 2,3,4,5,6,7,8
+#dodać odczyt i zapis obrazów qr z treści wpisywanej automatycznie dostosowywany rozmiar do ilości treści
+
+
+#zapis danych z qr do pliku tekstowego
