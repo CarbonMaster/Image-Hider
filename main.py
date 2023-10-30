@@ -79,11 +79,13 @@ def get_value():
     return quality
 
 def define_image(img_name):
-    print("\nInput image name and extention (ex. image.png)")
+    print("\nInput image name and extention (ex. image.png), or press ENTER to abort")
     while True:
         try:
             if img_name is None:
                 img_name = input()
+                if img_name == "":
+                    break
             test = Image.open(img_name)
             break
         except:
@@ -154,7 +156,7 @@ def question():
 
 def alpha_encode():
     #Inicjalizuje obrazy
-    print("\nEncoding procedure.\nRemember, that smaller image will be encoded in the larger one, or the first in the second!\nTarget images have to be in current folder.")
+    print("\nEncoding procedure.\nRemember, that smaller image will be encoded in the larger one, or the first in the second!\nTarget images have to be in current folder.\nYou don't require background picture for this encoding!")
 
     print("\nInput first image name and extention (ex. image1.png)")
 
@@ -166,15 +168,25 @@ def alpha_encode():
         except:
             print("Wrong type of name inserted. Try again.")
     
-    print("\nInput second image name and extention (ex. image2.png)")
+    print("\nInput second image name and extention (ex. image2.png), or press ENTER to create single color background")
 
     while True:
         try:
             img2_name = input()
-            test = Image.open(img2_name)
+            if img2_name != "":    
+                test = Image.open(img2_name)
+            else:
+                print("Creating empty background...")
             break
         except:
             print("Wrong type of name inserted. Try again.")
+
+    if img2_name != "": 
+        image2 = Image.open(img2_name)
+    else:
+        print("Choose BACKGROUND color.")
+        R,G,B = choose_color_val()
+        image2 = Image.new("RGBA", image1.size, (int(R), int(G), int(B), 255))
     
     t_image1 = Image.open(img1_name)
     t_image2 = Image.open(img2_name)
@@ -710,7 +722,6 @@ def alpha_encrypt_short(image):
     else:
         print("Choose BACKGROUND color.")
         R,G,B = choose_color_val()
-        print(R," ", G, " ", B)
         image2 = Image.new("RGBA", image1.size, (int(R), int(G), int(B), 255))
         
     width1, height1 = image1.size
@@ -937,6 +948,9 @@ def full_encrypt():
     result, abort = alpha_encrypt_short(messeage)
     if abort == True:
         return
+    print("Do you want to apply noise to whole output image? Reccomended for higher qualities of image! (y/n)")
+    if question() == True:    
+        result = noise(result)
     show_image(result)
     save_file(result)  
 
@@ -1201,8 +1215,8 @@ def main():
             
             
             
-    #except:
-    except error as e:
+    except KeyboardInterrupt:
+    #except error as e:
         print("Program failed or aborted")
         #print(f"{e}")
     return
@@ -1225,12 +1239,8 @@ main()
 #Interfejs graficzny
 #Dodatkowe utrudnienie w dostrzeżeniu szyfrowania poprzez dodanie wachań wartości kolorów
 #Zmniejszanie obrazu wyjściowego ma bazie braku kolorów
-#Dodać kodowanie na background jako pusty obraz, rozmiarowo identyczny jak wiadomość
-#
 
 #Usunac zbedny shit
-#wstawianie dokladnosci kodowanego obrazu
-#połączyć program przestrzenny z tym
 #Zrobic plik readme githubowy
 #Dodac obsluge przerwac aby CTRL+C wylaczal program
 
@@ -1242,11 +1252,8 @@ main()
 #Kazda funkcja ma miec pytanie o nazwy plikow otwieranych i zapisywanych
 #kazda f. ma pytac czy ZAPISAC obraz i go wyswietlic
 
-#punkty do zrobienia: 2,3,4,5,6,7,8
 #dodać odczyt i zapis obrazów qr z treści wpisywanej automatycznie dostosowywany rozmiar do ilości treści
 
-
-#zapis danych z qr do pliku tekstowego
 #po rozpoczeciu kazdego zadania lub podzadania musi byc \n
 
 #Dodać pisanie wiadomości w formie pikselowych liter
