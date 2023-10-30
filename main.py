@@ -869,18 +869,30 @@ def hash_decrypt_short(encrypted_img):
     encrypted_img = encrypted_img.convert("RGBA")
     pixels = encrypted_img.load()
 
-    decrypted_img = Image.new("RGBA", encrypted_img.size)
+   
     txt_name = load_txt()
     with open(txt_name, 'r') as plik:
         tresc = plik.read()
 
-    #Zrobic reakcje na wiekszy background niz obraz kodowany
+    
 
     width_dec, other = tresc.split("x")
     other_split = other.split(";")
     height_dec = int(other_split[0])
     width_dec = int(width_dec)
     liczba_str = other_split[1]
+    width_re, height_re = encrypted_img.size
+
+    if width_dec<width_re or height_dec<height_re:
+        #Zrobic reakcje na wiekszy background niz obraz kodowany
+        left = (width_re - width_dec) / 2
+        top = (height_re - height_dec) / 2
+        right = (width_re + width_dec) / 2
+        bottom = (height_re + height_dec) / 2
+        encrypted_img = encrypted_img.crop((left, top, right, bottom))
+
+    decrypted_img = Image.new("RGBA", encrypted_img.size)
+        
     
     hash = str(liczba_str)  # Konwersja liczby na łańcuch znaków
     ilosc_cyfr = len(str(int(width_dec)*int(height_dec)))
