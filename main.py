@@ -8,6 +8,8 @@ from pyzbar.pyzbar import decode
 import cv2
 import qrcode
 import string
+#import sys
+#sys.stdout.flush()
 #from colorama import Fore, Back, Style, init
 
 #init(autoreset=True)
@@ -39,6 +41,13 @@ def on_button_click():
 
 null = None
 
+def certain_value(g1, g2):
+    while True:
+        var = input()
+        if int(var) in range(g1, g2+1):
+            return var
+        else:
+            print("Wrong value")
 
 def generate_random_string(length):
     letters = string.ascii_letters  # Możesz użyć `string.ascii_lowercase` lub `string.ascii_uppercase` lub `string.ascii_letters`
@@ -292,8 +301,6 @@ def alpha_encode():
         result = noise(result)
     show_image(result)
     save_file(result)    
-    
-    
     return
 
 #Tutaj dokonuje odzyskania obrazu z tego gowna
@@ -433,7 +440,6 @@ def calculate_coordinates(ID, width, height):
 
 def hash_image():
     image = define_image(null)
-    #image = Image.open(image_name)
     image = image.convert("RGBA")
     pixels = image.load()
 
@@ -617,10 +623,13 @@ def hash_with_txt():
 
 
 
-def hash_encrypt_short(image):
+def hash_encrypt_short():
+    print("Insert MESSEAGE image. Remember, that it has to be smaller or equal to BACKGROUND image!")
     image = define_image(null)
     image = image.convert("RGBA")
     pixels = image.load()
+
+    print("Encoding...")
 
     obraz = Image.new("RGBA", image.size)
     obraz2 = Image.new("RGBA", image.size)
@@ -640,6 +649,7 @@ def hash_encrypt_short(image):
             wolne.append(id_counter)
             id_counter = id_counter + 1
 
+
     available_coordinates = [(x, y) for x in range(width) for y in range(height)]
 
     while wolne:
@@ -654,59 +664,62 @@ def hash_encrypt_short(image):
         x_out, y_out = random_cell
         obraz.putpixel((x_out, y_out), pixel_value)
         output_data[x_out,y_out,0]=image_data[x, y, 0]
-
-    return hashed_image
-
-
+            
+    #show_image(obraz)
+    #save_file(obraz)
 
     
+    
+    ilosc_cyfr = len(str(int(width)*int(height)))
+
+    print("Input hash txt file name...")
+    txt_name = (input() + ".txt")
+    
+    with open(txt_name, 'w') as plik:
+        plik.write(f"{width}x{height};")
+        for i in range(width):
+            for j in range(height):
+                format_id = str(output_data[i,j,0]).zfill(ilosc_cyfr)
+                plik.write(format_id)
+
+    return obraz
+
+
 
 
 def alpha_encrypt_short(image):
+    #Inicjalizuje obrazy
     print("\nEncoding procedure.\nRemember, that smaller image will be encoded in the larger one, or the first in the second!\nTarget images have to be in current folder.")
 
-    print("\nInput first image name and extention (ex. image1.png)")
-
-    while True:
-        try:
-            img1_name = input()
-            test = Image.open(img1_name)
-            break
-        except:
-            print("Wrong type of name inserted. Try again.")
-    
-    print("\nInput second image name and extention (ex. image2.png)")
+    print("\nInput BACKGROUND image name and extention (ex. image1.png) OR press ENTER to create single color background")
 
     while True:
         try:
             img2_name = input()
-            test = Image.open(img2_name)
+            if img2_name != "":    
+                test = Image.open(img2_name)
+            else:
+                print("Creating empty background...")
             break
         except:
             print("Wrong type of name inserted. Try again.")
     
-    t_image1 = Image.open(img1_name)
-    t_image2 = Image.open(img2_name)
-    t_width1, t_height1 = t_image1.size
-    t_width2, t_height2 = t_image2.size
+    image1 = image
+    if img2_name != "": 
+        image2 = Image.open(img2_name)
+    else:
+        print("Choose BACKGROUND color.")
+        R,G,B = choose_color_val()
+        print(R," ", G, " ", B)
+        image2 = Image.new("RGBA", image1.size, (int(R), int(G), int(B), 255))
+        
+    width1, height1 = image1.size
+    width2, height2 = image2.size
     
-    
-    if t_width1 * t_height1 >= t_width2 * t_height2:
-        #Obraz 2 jest wiadomoscia
-        if t_width1>=t_width2 and t_height1>=t_height2:
-            image2 = Image.open(img1_name)
-            image1 = Image.open(img2_name)
-        else:
-            print("Images are not compatible to conversion due to size limits)")
-    elif t_width1 * t_height1 < t_width2 * t_height2:
-        #Obraz 1 jest wiadomoscia
-        if t_width2>=t_width1 and t_height2>=t_height1:
-            image1 = Image.open(img1_name)
-            image2 = Image.open(img2_name)
-        else:
-            print("Images are not suitable to conversion due to size limits")
-            
-    return image1, image2
+    if width1>width2 or height1>height2:
+        print("MESSEAGE image is larger than BACKGROUND! Aborting.")
+        abort = True
+        return image1, abort   
 
     print("Encoding...") 
 
@@ -803,20 +816,103 @@ def alpha_encrypt_short(image):
 
             result.putpixel((x,y), (r_bg, g_bg, b_bg, a_res))
 
-    print("Do you want to apply noise to whole output image? Reccomended for higher qualities of image! (y/n)")
-    if question() == True:    
-        result = noise(result)
-    show_image(result)
-    save_file(result)    
+    #print("Do you want to apply noise to whole output image? Reccomended for higher qualities of image! (y/n)")
+    #if question() == True:    
+    #    result = noise(result)
+    #show_image(result)
+    #save_file(result)
+    abort = None
+    return result, abort
+
+
+def alpha_decode_short():
+    image_converted = define_image(null)
+
+    image_converted = image_converted.convert("RGBA")
+
+    width_o, height_o = image_converted.size
+
+    decoded_image = Image.new("RGBA", (width_o, height_o) )
+
+    pixels = list(image_converted.getdata())
+
+    min_alpha = 255 
+    max_alpha = 255
+
+    for pixel in pixels:
+        temp = pixel[3]
+
+        if temp < min_alpha and temp > 0:
+            min_alpha = temp
+
+    temp = max_alpha - min_alpha
+    if temp == 0:
+        temp=255
+
+    for x in range(width_o):
+        for y in range(height_o):
+            alpha_value = pixels[y * width_o + x][3]  
+            alpha_value = round(((255-alpha_value)/temp)*255)
+            new_pixel = (alpha_value, alpha_value, alpha_value, 255)
+
+            decoded_image.putpixel((x, y), new_pixel)
+    #print(max_alpha)
+    #print(min_alpha)
+    #decoded_image.show()
+    #show_image(decoded_image)
+    #save_file(decoded_image)
+    return decoded_image
+
+
+def hash_decrypt_short(encrypted_img):
+
+    encrypted_img = encrypted_img.convert("RGBA")
+    pixels = encrypted_img.load()
+
+    decrypted_img = Image.new("RGBA", encrypted_img.size)
+    txt_name = load_txt()
+    with open(txt_name, 'r') as plik:
+        tresc = plik.read()
+
+    #Zrobic reakcje na wiekszy background niz obraz kodowany
+
+    width_dec, other = tresc.split("x")
+    other_split = other.split(";")
+    height_dec = int(other_split[0])
+    width_dec = int(width_dec)
+    liczba_str = other_split[1]
+    
+    hash = str(liczba_str)  # Konwersja liczby na łańcuch znaków
+    ilosc_cyfr = len(str(int(width_dec)*int(height_dec)))
     
     
-    return GSDFHzxgjchkjkl
+    # Pętla do rozdzielania ciągu na liczby
+    liczby = []
+    for i in range(0, len(hash), ilosc_cyfr):
+        liczba = hash[i:i + ilosc_cyfr]
+        liczby.append(int(liczba))
+        #print(int(liczba))
 
+    pixel_data = []
+    start_number = 0
+    for x in range(width_dec):
+        for y in range(height_dec):
+            pixel = encrypted_img.getpixel((x, y))
+            red, green, blue, alpha = pixel
+            pixel_data.append({"ID": liczby[start_number], "R": red, "G": green, "B": blue, "A": alpha})
+            start_number = start_number + 1
 
+    sorted_pixel_data = sorted(pixel_data, key=lambda x: x["ID"])
 
+    uno = 0
+    for x in range(width_dec):
+        for y in range(height_dec):
+            element = sorted_pixel_data[uno]
+            rgba = (element["R"], element["G"], element["B"], element["A"])
+            decrypted_img.putpixel((x, y), rgba)
+            uno = uno + 1
 
-
-
+    return decrypted_img
 
 
 
@@ -824,9 +920,11 @@ def alpha_encrypt_short(image):
 
 
 def full_encrypt():
-    print("Not ready yet.")
     messeage = hash_encrypt_short()
-    result = alpha_encrypt_short(messeage)
+    print("Encoding alpha image...")
+    result, abort = alpha_encrypt_short(messeage)
+    if abort == True:
+        return
     show_image(result)
     save_file(result)  
 
@@ -834,6 +932,12 @@ def full_encrypt():
 
 def full_decrypt():
     print("Not ready yet.")
+    print("\nAlpha decoding...")
+    image = alpha_decode_short()
+    print("Alpha decryption in progress.")
+    dec_img = hash_decrypt_short(image)
+    show_image(dec_img)
+    save_file(dec_img)
 
 
 
@@ -847,7 +951,7 @@ def full_decrypt():
 
 def choose_color():
     while True:
-        print("\nChoose fill color for QR code.\n -1- White\n -2- Black\n -3- Red\n -4- Green\n -5- Blue\n -6- Define your own!\n")
+        print("\nChoose FILL color for QR code.\n -1- White\n -2- Black\n -3- Red\n -4- Green\n -5- Blue\n -6- Define your own!(NON-FUNCTIONAL)\n")
         Input = input()
         if Input == "1":
             col1 = "white"
@@ -866,33 +970,8 @@ def choose_color():
             break
         elif Input == "6":
             print("Choose color values between 0 and 255!")
-            while True:
-                while True:
-                    print("Insert Red value")
-                    R = input()
-                    if int(R) not in range(0,255):
-                        R = "0"
-                        print("Wrong value")
-                    else:
-                        break
-                while True:
-                    print("Insert Red value")
-                    G = input()
-                    if int(G) not in range(0,255):
-                        G = "0"
-                        print("Wrong value")
-                    else:
-                        break
-                while True:
-                    print("Insert Red value")
-                    B = input()
-                    if int(B) not in range(0,255):
-                        B = "0"
-                        print("Wrong value")
-                    else:
-                        break
-                    break 
-            col1 = "#" + R + G + B
+            R,G,B = choose_color_val()
+            col1 = "#" + str(R) + str(G) + str(B)
             break
         else:
             you = generate_random_string(10)
@@ -901,7 +980,7 @@ def choose_color():
         break
 
     while True:
-        print("\nChoose BACKGROUND color for QR code.\n -1- White\n -2- Black\n -3- Red\n -4- Green\n -5- Blue\n -6- Define your own!\n")
+        print("\nChoose BACKGROUND color for QR code.\n -1- White\n -2- Black\n -3- Red\n -4- Green\n -5- Blue\n -6- Define your own! (NON-FUNCTIONAL)\n")
         Input = input()
         if Input == "1":
             col2 = "white"
@@ -920,31 +999,8 @@ def choose_color():
             break
         elif Input == "6":
             print("Choose color values between 0 and 255!")
-            print("Insert Red value")
-            while True:
-                Red = input()
-                if int(Red) in range(0, 255):
-                    break
-                else:
-                    print("Wrong value")
-
-            print("Insert Green value")
-            while True:
-                Green = input()
-                if int(Green) in range(0, 255):
-                    break
-                else:
-                    print("Wrong value")
-
-            print("Insert Blue value")
-            while True:
-                Blue = input()
-                if int(Blue) in range(0, 255):
-                    break
-                else:
-                    print("Wrong value")
-
-            col2 = "#" + R + G + B
+            R,G,B = choose_color_val()
+            col2 = "#" + str(R) + str(G) + str(B)
             break
         else:
             print("Wrong choice !")
@@ -953,6 +1009,17 @@ def choose_color():
         
     
     return col1, col2
+
+def choose_color_val():
+    print("Insert Red value")
+    R = certain_value(0,255)
+    print("Insert Green value")
+    G = certain_value(0,255)
+    print("Insert Blue value")
+    B = certain_value(0,255)
+    return R, G, B
+
+
 
 def split_data(data, max_length):
     data_blocks = []
@@ -995,8 +1062,8 @@ def qr_regular(data_to_encode):
     qr = qrcode.QRCode(
         version=1,  # Wersja kodu QR (może być dostosowana)
         error_correction=qrcode.constants.ERROR_CORRECT_L,  # Rodzaj korekcji błędów
-        box_size=10,  # Rozmiar pojedynczego piksela (zależy od rozmiaru kodu QR)
-        border=4,  # Margines w pikselach
+        box_size=1,  # Rozmiar pojedynczego piksela (zależy od rozmiaru kodu QR)
+        border=1,  # Margines w pikselach
     )
 
     # Dodaj dane do zakodowania
@@ -1085,7 +1152,6 @@ def qr():
 def main():
     #root.mainloop()
     try:
-        
         while True:
             print("\nInput desired operation number: ")
             print("\n 1 - Encode messeage in alpha\n 2 - Decode alpha messeeage\n 3 - Scramble an image")
@@ -1123,9 +1189,10 @@ def main():
             
             
             
-
-    except:
+    #except:
+    except error as e:
         print("Program failed or aborted")
+        #print(f"{e}")
     return
 
 
@@ -1136,6 +1203,7 @@ main()
 #NOTES:
 #Oh fuck yeah. It's all coming together.
 #Wymiary optymalne są do 500x500 rozmiaru
+#Usprawnić hash image
 
 #To do:
 #Zrobić elastyczność hasha na rozmiary większe i mniejsze
@@ -1159,13 +1227,6 @@ main()
 #zrobic klucz do identycznego rozkladania pikseli dla obrazow o identycznym rozmiarze
 
 
-#Zamiarem tego kodu jest aby obraz wyjściowy był losowo rozpierdolony
-#ale każdy piksel ma swoje ID na podstawie których można wstecznie ułożyć oryginalny obraz
-#kodem odszyfrowującym jest lista numerów ID pikseli w obrazie.
-#ilość maksymalną cyfr w ID można policzyć znając rozmiar obrazu.
-#dodac generowanie txt z hashem dla podanego rozmiaru obrazu, bez jego generowania
-
-
 #Kazda funkcja ma miec pytanie o nazwy plikow otwieranych i zapisywanych
 #kazda f. ma pytac czy ZAPISAC obraz i go wyswietlic
 
@@ -1180,3 +1241,6 @@ main()
 #Rozmiar litery równy (7x4)[y/x]
 #Przerwa mniedzy literami wynosi jedna kolumna bialych pikseli.
 #Chcę zrobic program ktory bedzie konwertować wprowadzane znaki na pikselowe reprezentacje 7x5 które
+
+#Ustalanie rozmiarów w kodzie QR
+#wybieranie kolorów jest zjebane. kolory RGB z customowych kolorów nie zwracają wartości!
