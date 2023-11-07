@@ -41,12 +41,29 @@ def on_button_click():
 
 null = None
 
-def certain_value(g1, g2):
+def image_size(x_min, y_min):
+    print(f"Insert image WIDTH value. Minimal is {x_min}")
+    size1 = certain_value(x_min,0,1)
+    print(f"Insert image HEIGHT value. Minimal is {y_min}")
+    size2 = certain_value(y_min,0,1)
+    return size1, size2
+
+def certain_value(g1, g2, mode):
+    #Mode 1 is making sure val is int. 2 is val in range of values
     while True:
-        var = input()
-        if int(var) in range(g1, g2+1):
-            return var
-        else:
+        try:
+            var = input()
+            if mode == 1:
+                if int(var) >= g1:
+                    return var
+                else:
+                    print("Wrong value")
+            if mode == 2:
+                if int(var) in range(g1, g2+1):
+                    return var
+                else:
+                    print("Wrong value")
+        except:
             print("Wrong value")
 
 def generate_random_string(length):
@@ -71,7 +88,7 @@ def noise(image):
 def get_value():
     while True:
         try:
-            quality = int(input())
+            quality = int(certain_value(0,255,2))
             break
         except:
             quality = None
@@ -127,6 +144,7 @@ def save_file(image):
     if name == "":
         return
     image.save(name+".png")
+    print("")
 
 
 def question():
@@ -181,12 +199,7 @@ def alpha_encode():
         except:
             print("Wrong type of name inserted. Try again.")
 
-    if img2_name != "": 
-        image2 = Image.open(img2_name)
-    else:
-        print("Choose BACKGROUND color.")
-        R,G,B = choose_color_val()
-        image2 = Image.new("RGBA", image1.size, (int(R), int(G), int(B), 255))
+    
     
     t_image1 = Image.open(img1_name)
     t_image2 = Image.open(img2_name)
@@ -201,7 +214,7 @@ def alpha_encode():
             image1 = Image.open(img2_name)
             image3 = Image.open(img1_name)
         else:
-            print("Images are not compatible to conversion due to size limits (uno)")
+            print("Images are not compatible to conversion due to size limits")
     elif t_width1 * t_height1 < t_width2 * t_height2:
         #Obraz 1 jest wiadomoscia
         if t_width2>=t_width1 and t_height2>=t_height1:
@@ -209,15 +222,35 @@ def alpha_encode():
             image2 = Image.open(img2_name)
             image3 = Image.open(img2_name)
         else:
-            print("Images are not suitable to conversion due to size limits (dos)")
+            print("Images are not suitable to conversion due to size limits")
             
-    
+    if img2_name != "": 
+        image2 = Image.open(img2_name)
+    else:
+        print("Do You want to set BACKGROUND color? (y/n) [White is default]")
+        if question():
+            print("Choose BACKGROUND color.")
+            R,G,B = choose_color_val()
+        else:
+            R,G,B = 255,255,255
+            
+        print("Do You want to set background size? \nIf NO, size will be equal to MESSEAGE size (y/n)\n")
+        if question():
+            img_x, img_y = image_size(width1,height1)
+            sizer = int(img_x), int(img_y)
+            size_q = True
+            image2 = Image.new("RGBA", sizer, (int(R), int(G), int(B), 255))
+        else:
+            image2 = Image.new("RGBA", image1.size, (int(R), int(G), int(B), 255))
+        
 
     print("Encoding...") 
 
     image1 = image1.convert("RGBA")
     #image2 = image2.convert("RGB")
     image2 = image2.convert("RGBA")
+
+    
     
     pixels1 = image1.load()
     pixels2 = image2.load()
@@ -312,7 +345,7 @@ def alpha_encode():
     if question() == True:    
         result = noise(result)
     show_image(result)
-    save_file(result)    
+    save_file(result)
     return
 
 #Tutaj dokonuje odzyskania obrazu z tego gowna
@@ -364,7 +397,7 @@ def alpha_decode():
 
 
 def scamble():
-    print("Scrambling image chosen.")
+    print("\nChoose image to scramble. \n WARNING: Output image cannot be un-scrambled!")
     image = define_image(null)
 
     print("Input scramble seed text:")
@@ -505,7 +538,7 @@ def hash_image():
             for j in range(height):
                 format_id = str(output_data[i,j,0]).zfill(ilosc_cyfr)
                 plik.write(format_id)
-
+    print("")
 
 
 def load_txt():
@@ -717,14 +750,28 @@ def alpha_encrypt_short(image):
             print("Wrong type of name inserted. Try again.")
     
     image1 = image
+    width1, height1 = image1.size
+    
     if img2_name != "": 
         image2 = Image.open(img2_name)
     else:
-        print("Choose BACKGROUND color.")
-        R,G,B = choose_color_val()
-        image2 = Image.new("RGBA", image1.size, (int(R), int(G), int(B), 255))
+        print("Do You want to set BACKGROUND color? (y/n) [White is default]")
+        if question():
+            print("Choose BACKGROUND color.")
+            R,G,B = choose_color_val()
+        else:
+            R,G,B = 255,255,255
+            
+        print("Do You want to set background size? \nIf NO, size will be equal to MESSEAGE size (y/n)\n")
+        if question():
+            img_x, img_y = image_size(width1,height1)
+            sizer = int(img_x), int(img_y)
+            size_q = True
+            image2 = Image.new("RGBA", sizer, (int(R), int(G), int(B), 255))
+        else:
+            image2 = Image.new("RGBA", image1.size, (int(R), int(G), int(B), 255))
         
-    width1, height1 = image1.size
+    
     width2, height2 = image2.size
     
     if width1>width2 or height1>height2:
@@ -1038,11 +1085,11 @@ def choose_color():
 
 def choose_color_val():
     print("Insert Red value")
-    R = certain_value(0,255)
+    R = certain_value(0,255,2)
     print("Insert Green value")
-    G = certain_value(0,255)
+    G = certain_value(0,255,2)
     print("Insert Blue value")
-    B = certain_value(0,255)
+    B = certain_value(0,255,2)
     return R, G, B
 
 
@@ -1227,32 +1274,17 @@ main()
 
 
 #NOTES:
-#Oh fuck yeah. It's all coming together.
-#Wymiary optymalne są do 500x500 rozmiaru
 #Usprawnić hash image
 
 #To do:
 #Zrobić elastyczność hasha na rozmiary większe i mniejsze
-#alpha_encrypt_short
-
-#LEft to do:
 #Interfejs graficzny
-#Dodatkowe utrudnienie w dostrzeżeniu szyfrowania poprzez dodanie wachań wartości kolorów
 #Zmniejszanie obrazu wyjściowego ma bazie braku kolorów
 
 #Usunac zbedny shit
 #Zrobic plik readme githubowy
-#Dodac obsluge przerwac aby CTRL+C wylaczal program
 
 #Zrobić klucz do losowego wstawiania pikseli
-#renderowanie klucza-ID do pliku tekstowego
-#zrobic klucz do identycznego rozkladania pikseli dla obrazow o identycznym rozmiarze
-
-
-#Kazda funkcja ma miec pytanie o nazwy plikow otwieranych i zapisywanych
-#kazda f. ma pytac czy ZAPISAC obraz i go wyswietlic
-
-#dodać odczyt i zapis obrazów qr z treści wpisywanej automatycznie dostosowywany rozmiar do ilości treści
 
 #po rozpoczeciu kazdego zadania lub podzadania musi byc \n
 
